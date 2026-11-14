@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#10192a" />
+  <meta name="description" content="SiteGuard QR — workforce timekeeping and verification. A deployment-ready application preview." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="/styles.css" />
+  <title>SiteGuard QR | Timekeeping &amp; Verification</title>
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Application navigation">
+      <a class="brand" href="#overview" aria-label="SiteGuard QR overview">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M7 7h7v7H7zM18 7h7v7h-7zM7 18h7v7H7z" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><path d="M19 19h2m3 0v3m-5 2h6" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/></svg></span>
+        <span class="brand-text"><strong>SiteGuard<span class="brand-qr"> QR</span></strong><small>Workforce Intelligence</small></span>
+      </a>
+      <div class="sidebar-label">WORKSPACE</div>
+      <nav class="nav" aria-label="Main">
+        <a class="nav-link" data-view-link="overview" href="#overview"><span class="nav-icon">▦</span><span>Overview</span></a>
+        <a class="nav-link" data-view-link="kiosk" href="#kiosk"><span class="nav-icon">▣</span><span>QR Timekeeping</span><span class="nav-tag">Soon</span></a>
+        <a class="nav-link" data-view-link="reviews" href="#reviews"><span class="nav-icon">◇</span><span>Verification</span><span class="nav-tag">Soon</span></a>
+        <a class="nav-link" data-view-link="exports" href="#exports"><span class="nav-icon">↥</span><span>Payroll Exports</span><span class="nav-tag">Soon</span></a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-note"><span class="note-indicator" aria-hidden="true"></span><span><strong>Preview environment</strong><small>No live attendance data</small></span></div>
+        <a href="https://github.com/ariz31/payroll/blob/main/docs/INDEX.md" target="_blank" rel="noopener noreferrer" class="sidebar-doc-link">Documentation <span aria-hidden="true">↗</span></a>
+      </div>
+    </aside>
+
+    <main class="content" id="main-content">
+      <header class="topbar">
+        <div class="breadcrumbs"><span>SiteGuard QR</span><span aria-hidden="true" class="crumb-separator">/</span><strong id="current-view">Overview</strong></div>
+        <div class="topbar-right"><span class="environment-pill"><span class="dot"></span>Preview only</span><span class="avatar" aria-label="SiteGuard project">SG</span></div>
+      </header>
+
+      <section data-view="overview" class="view">
+        <div class="page-heading">
+          <div><p class="eyebrow">SITEGUARD CONTROL CENTER</p><h1>Workforce timekeeping,<br/><span class="title-muted">built for accountability.</span></h1><p class="subtitle">A dependable foundation for QR attendance, multi-level approvals, and payroll-ready audit exports.</p></div>
+          <a class="outline-button" href="https://github.com/ariz31/payroll" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">↗</span> GitHub Repository</a>
+        </div>
+
+        <div class="hero-banner">
+          <div class="hero-content"><span class="hero-kicker"><span class="sparkle" aria-hidden="true">✦</span> DEPLOYMENT MILESTONE</span><h2>The foundation is in place.</h2><p>This minimal app is ready to be served by Vercel. Attendance capture, database storage, verification and payroll exports will be added in later stages.</p><a href="https://github.com/ariz31/payroll/blob/main/docs/product/ROADMAP.md" target="_blank" rel="noopener noreferrer" class="light-button">View development roadmap <span aria-hidden="true">↗</span></a></div>
+          <div class="hero-art" aria-hidden="true"><div class="art-ring ring-one"></div><div class="art-ring ring-two"></div><div class="art-card"><div class="qr-grid"><i class="finder"></i><i class="finder"></i><i class="finder"></i><i></i><i class="fill"></i><i></i><i class="fill"></i><i></i><i class="fill"></i><i></i><i class="fill"></i><i class="fill"></i><i></i><i class="fill"></i><i></i><i class="fill"></i></div><div class="art-card-footer"><span class="art-avatar"></span><span><b>SiteGuard QR</b><small>Attendance ready for development</small></span></div></div></div>
+        </div>
+
+        <div class="section-heading"><div><h2>System modules</h2><p>The planned modules are defined in the technical specification.</p></div><span class="section-count">4 modules</span></div>
+        <div class="module-grid">
+          <a href="#kiosk" class="module-card"><span class="module-icon teal">▣</span><span class="card-status">Planned</span><h3>QR Timekeeping</h3><p>Employee badge scanning, kiosk capture and shift pairing.</p><span class="card-footer">Explore module <span aria-hidden="true">→</span></span></a>
+          <a href="#reviews" class="module-card"><span class="module-icon amber">◇</span><span class="card-status">Planned</span><h3>Verification</h3><p>Foreman, department and timekeeper review workflow.</p><span class="card-footer">Explore module <span aria-hidden="true">→</span></span></a>
+          <a href="#exports" class="module-card"><span class="module-icon purple">↥</span><span class="card-status">Planned</span><h3>Payroll Exports</h3><p>Verified attendance handoff using the 23-column format.</p><span class="card-footer">Explore module <span aria-hidden="true">→</span></span></a>
+          <a href="https://github.com/ariz31/payroll/blob/main/docs/architecture/SYSTEM_ARCHITECTURE.md" target="_blank" rel="noopener noreferrer" class="module-card"><span class="module-icon blue">⌘</span><span class="card-status complete">Documented</span><h3>System Architecture</h3><p>Technical requirements, security rules and implementation plan.</p><span class="card-footer">Read architecture <span aria-hidden="true">↗</span></span></a>
+        </div>
+
+        <div class="bottom-note"><span aria-hidden="true">ⓘ</span><p><strong>Safe starting point.</strong> This is a user-interface preview. It does not collect employee data, record time-in/out, or connect to a payroll system.</p></div>
+      </section>
+
+      <section data-view="kiosk" class="view" hidden>
+        <div class="inner-heading"><p class="eyebrow">MODULE / 01</p><h1>QR Timekeeping</h1><p class="subtitle">A fast, reliable time-in / time-out kiosk for work sites.</p></div>
+        <div class="empty-state"><span class="empty-icon teal">▣</span><span class="card-status">Not yet connected</span><h2>Attendance capture is coming next.</h2><p>The planned kiosk will support signed QR badges, five-minute duplicate protection, night shifts and offline queuing. No scans are recorded in this preview.</p><a class="primary-link" href="https://github.com/ariz31/payroll/blob/main/docs/specs/QR_SECURITY_AND_OFFLINE.md" target="_blank" rel="noopener noreferrer">Read QR specifications <span aria-hidden="true">↗</span></a></div>
+      </section>
+
+      <section data-view="reviews" class="view" hidden>
+        <div class="inner-heading"><p class="eyebrow">MODULE / 02</p><h1>Verification</h1><p class="subtitle">Keep original attendance evidence intact and review exceptions clearly.</p></div>
+        <div class="workflow-panel"><h2>Planned approval workflow</h2><p>This is a preview of the process. Review actions are not available yet.</p><div class="workflow-steps"><div><span class="step-index">01</span><strong>Site Foreman</strong><small>Field endorsement</small></div><span class="connector" aria-hidden="true">→</span><div><span class="step-index">02</span><strong>Project Engineer</strong><small>Cost code &amp; overtime</small></div><span class="connector" aria-hidden="true">→</span><div><span class="step-index">03</span><strong>Timekeeper</strong><small>Final verification</small></div></div><a class="primary-link" href="https://github.com/ariz31/payroll/blob/main/docs/specs/WORKFLOW_AND_ROLES.md" target="_blank" rel="noopener noreferrer">Read workflow specification <span aria-hidden="true">↗</span></a></div>
+      </section>
+
+      <section data-view="exports" class="view" hidden>
+        <div class="inner-heading"><p class="eyebrow">MODULE / 03</p><h1>Payroll Exports</h1><p class="subtitle">Payroll-ready logs without changing the original scan evidence.</p></div>
+        <div class="empty-state"><span class="empty-icon purple">↥</span><span class="card-status">Not available yet</span><h2>The 23-column export is specified.</h2><p>The planned 06_QR_Timekeeper_Log will include verification statuses and employee audit holds. No CSV/XLSX generation is active in this preview.</p><a class="primary-link" href="https://github.com/ariz31/payroll/blob/main/docs/specs/PAYROLL_EXPORT.md" target="_blank" rel="noopener noreferrer">Read export contract <span aria-hidden="true">↗</span></a></div>
+      </section>
+
+      <footer class="site-footer"><span>© <span id="year">2026</span> SiteGuard QR</span><span>Initial application preview · No production data</span></footer>
+    </main>
+  </div>
+</body>
+</html>

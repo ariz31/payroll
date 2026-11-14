@@ -1,0 +1,14 @@
+{
+  "name": "siteguard-qr",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal SiteGuard QR deployment preview (no live attendance backend)",
+  "scripts": {
+    "build": "node scripts/verify-static.mjs",
+    "test": "node scripts/verify-static.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
