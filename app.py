@@ -64,7 +64,7 @@ def readiness():
     secret()
     with transaction() as db:
         version = db.execute("SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1").fetchone()
-    if not version or version["version"] < "005_maintenance.sql":
+    if not version or version["version"] < "006_reconciliation.sql":
         raise HTTPException(503, "Database schema is not ready")
     return {"status": "ready"}
 

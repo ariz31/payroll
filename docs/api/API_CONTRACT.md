@@ -12,7 +12,7 @@ FastAPI publishes the machine-readable schema at `/api/openapi.json` and the int
 | Terminals and scans | `GET /terminals`, `PUT /terminals/{code}`, `POST /terminals/{code}/rotate`, `POST /terminals/session`, `POST /scans`, `POST /scans/offline-batches` |
 | Policy and verification | `GET/PUT /config`, `GET /dashboard`, `GET /shifts`, `GET /shifts/{id}`, `POST /shifts/{id}/review`, `POST /shifts/bulk-verify`, `GET /shifts/{id}/evidence/{kind}` |
 | Exports and printable DTR | `GET /payroll/periods/{period}/preflight`, `GET/POST /payroll/exports`, `GET /payroll/exports/{id}`, `GET /payroll/periods/{period}/dtr/{employee}` |
-| Audit | `GET /audit/scans`, `GET /audit/approvals`, `GET /audit/control` |
+| Audit | `GET /audit/scans`, `POST /audit/scans/{id}/reconcile`, `GET /audit/approvals`, `GET /audit/control` |
 
 ## Scan capture
 

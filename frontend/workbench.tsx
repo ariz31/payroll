@@ -227,6 +227,7 @@ function ShiftDetail({ ident, session, period }: { ident: string; session: Sessi
         <div className="inline-details"><span>Exception <strong>{row.open_shift ? 'Awaiting clock-out' : row.anomaly}</strong></span><span>Cost code <strong>{row.cost_code}</strong></span>
           <span>Break <strong>{row.break_mins} min</strong></span><span>Regular <strong>{row.regular_hours} h</strong></span><span>Overtime <strong>{row.ot_hours} h</strong></span>
           <span>Night <strong>{row.night_hours} h</strong></span></div>
+        <p className="inline-details">Shift ID <code>{row.id}</code></p>
       </section>
       {!!(row.evidence?.badge || row.evidence?.scans.length) && <section className="panel">
         <header className="panel-heading"><h2>Retained images</h2></header><div className="image-grid">
@@ -248,6 +249,12 @@ function ShiftDetail({ ident, session, period }: { ident: string; session: Sessi
           <label>Reason and evidence<textarea name="notes" required maxLength={1500} rows={3} /></label>
           <button className="primary" disabled={busy}>{busy ? 'Saving…' : 'Save review'}</button>
         </form>
+      </section>}
+      {!!row.reconciled_scans?.length && <section className="panel">
+        <header className="panel-heading"><h2>Linked quarantined scans</h2></header>
+        <ol className="history">{row.reconciled_scans.map((entry) => <li key={entry.event_id}>
+          <strong>{entry.actor_login}</strong><span>{stamp(entry.decided_at, row.timezone, true)}</span><p>{entry.notes}</p>
+        </li>)}</ol>
       </section>}
       {row.history && <section className="panel"><header className="panel-heading"><h2>Review history</h2></header>
         {row.history.length ? <ol className="history">{row.history.map((entry) => <li key={entry.id}>

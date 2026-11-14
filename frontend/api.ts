@@ -58,6 +58,7 @@ export interface Shift {
   version: number;
   notes?: string;
   history?: Approval[];
+  reconciled_scans?: { event_id: string; actor_login: string; decided_at: string; notes: string }[];
   evidence?: { badge: boolean; scans: string[] };
   in_event: string | null;
   out_event: string | null;
@@ -84,6 +85,11 @@ export interface AuditScan {
   received_at: string;
   reported_at: string;
   sequence: number | null;
+  shift_id: string | null;
+  disposition: 'dismissed' | 'linked_for_review' | null;
+  linked_shift: string | null;
+  actor_login: string | null;
+  reconciliation_notes: string | null;
 }
 
 export interface ControlAudit {
