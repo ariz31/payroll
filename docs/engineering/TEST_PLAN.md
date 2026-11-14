@@ -1,6 +1,6 @@
 # Verification strategy, test matrix and seed fixtures
 
-**Status:** **planned tests**, not executed. Source: blueprint §6 plus derived threat/boundary cases. No test suite or harness exists yet.
+The [automated tests](../../tests) exercise the six reference cases, PostgreSQL invariants, concurrency, permissions, offline ingestion, OIDC validation, retention, and payroll artifact contracts. The Chromium scenario covers the kiosk, offline reload, all three review roles, CSV download and print view. The broader register below includes field tests and recovery checks for deployment.
 
 ## 1. Test layers
 

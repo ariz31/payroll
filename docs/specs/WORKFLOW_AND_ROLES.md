@@ -1,6 +1,6 @@
 # Three-tier verification workflow and permission model
 
-**Status:** tier order, states and mandatory justification from blueprint §4; specific endpoint names and transition routing are **proposed**.
+Tier order, states and mandatory justification come from blueprint §4. See [API reviews](../api/API_CONTRACT.md#reviews) for the implemented transition endpoint.
 
 ## 1. Workflow tiers (source)
 
@@ -29,7 +29,7 @@ stateDiagram-v2
 
 **Proposed mapping:** all active stages export `Pending Review`; final positive = `Verified`; final negative = `Disputed / Rejected`. Any reopen must create new audit events and an export revision instead of rewriting past handoffs.
 
-Blueprint says clean OK scans may be bulk verified or auto-verified. **Open decision:** whether these bypass Tier 1/2, are self-attested by policy or require a separate delegation; defaults should be conservative.
+Blueprint says clean OK scans may be bulk verified or auto-verified. The timekeeper can bulk-verify a complete clean shift at the first stage. Organization policy can enable automatic verification of a complete clean shift with no existing reviews. Both paths leave an audit entry.
 
 ## 3. Role access matrix (proposed starting point)
 

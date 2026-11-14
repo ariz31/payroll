@@ -38,13 +38,17 @@ def previous_secrets():
 
 def hash_password(password, salt=None):
     salt = salt or secrets.token_bytes(16)
-    result = hashlib.scrypt(password.encode(), salt=salt, n=2**15, r=8, p=1, maxmem=64 * 1024**2)
-    return f"scrypt:{salt.hex()}:{result.hex()}"
+    result = hashlib.scrypt(password.encode(), salt=salt, n=2**15, r=8, p=3, maxmem=64 * 1024**2)
+    return f"scrypt-3:{salt.hex()}:{result.hex()}"
 
 
 def check_password(password, stored):
     salt = bytes.fromhex(stored.split(":")[1]) if stored else DUMMY_SALT
-    candidate = hash_password(password, salt)
+    if stored and stored.startswith("scrypt:"):
+        result = hashlib.scrypt(password.encode(), salt=salt, n=2**15, r=8, p=1, maxmem=64 * 1024**2)
+        candidate = f"scrypt:{salt.hex()}:{result.hex()}"
+    else:
+        candidate = hash_password(password, salt)
     return hmac.compare_digest(candidate, stored or "") and bool(stored)
 
 

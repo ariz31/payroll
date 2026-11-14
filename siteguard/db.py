@@ -21,7 +21,10 @@ def transaction(dsn=None):
     url = dsn or os.getenv("DATABASE_URL")
     if not url:
         raise psycopg.OperationalError("Database configuration is missing")
-    with psycopg.connect(url, row_factory=dict_row, connect_timeout=4, prepare_threshold=None, options="-c timezone=UTC -c statement_timeout=15000") as connection:
+    with psycopg.connect(url, row_factory=dict_row, connect_timeout=4, prepare_threshold=None) as connection:
+        if dsn is None:
+            connection.execute("SET LOCAL TIME ZONE 'UTC'")
+            connection.execute("SET LOCAL statement_timeout = '15s'")
         yield connection
 
 

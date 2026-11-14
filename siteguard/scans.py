@@ -165,14 +165,14 @@ def pair(db, employee, device, site, captured, direction, version, rules, event_
     org, emp = employee["org_id"], employee["id"]
     work_date, inferred = assign_day(captured, site["timezone"], employee["shift_type"], rules, direction)
     shift = None
-    if direction == "auto":
+    if direction != "in":
         candidates = db.execute(
             """SELECT * FROM shifts WHERE org_id=%s AND employee_id=%s AND site_id=%s AND raw_in<%s
             AND raw_out IS NULL AND stage NOT IN ('verified','disputed') AND adjusted_out IS NULL
             AND raw_in>%s ORDER BY raw_in DESC LIMIT 2""",
             (org, emp, site["id"], captured, captured - timedelta(hours=24)),
         ).fetchall()
-        # An open shift in its scheduled window has priority over a new automatic arrival.
+        # An open shift in its scheduled window outranks a fresh time-based guess.
         for candidate in candidates:
             _, candidate_rules = policy(db, org, candidate["policy_version"])
             start, end = scheduled(candidate["work_date"], candidate["timezone"], candidate["shift_type"], candidate_rules)

@@ -10,6 +10,8 @@ from fastapi.staticfiles import StaticFiles
 
 from siteguard.accounts import router as accounts
 from siteguard.db import transaction
+from siteguard.identity import router as identity
+from siteguard.maintenance import router as maintenance
 from siteguard.payroll import router as payroll
 from siteguard.reviews import router as reviews
 from siteguard.registry import router as registry
@@ -19,12 +21,16 @@ from siteguard.security import secret
 logger = logging.getLogger("siteguard")
 app = FastAPI(title="SiteGuard QR", version="1.0", docs_url="/api/docs",
               openapi_url="/api/openapi.json", redoc_url=None)
-for router in (accounts, registry, scans, reviews, payroll):
+for router in (accounts, registry, scans, reviews, payroll, identity, maintenance):
     app.include_router(router, prefix="/api/v1")
 
 
 @app.middleware("http")
 async def protect_response(request: Request, call_next):
+    if request.url.path.startswith("/api/") and request.method in {"POST", "PUT", "PATCH"}:
+        length = request.headers.get("content-length")
+        if length and length.isdecimal() and int(length) > 2_000_000:
+            return JSONResponse({"detail": "Request is too large"}, status_code=413)
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["Referrer-Policy"] = "no-referrer"
@@ -58,11 +64,11 @@ def readiness():
     secret()
     with transaction() as db:
         version = db.execute("SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1").fetchone()
-    if not version or version["version"] < "003_workflow.sql":
+    if not version or version["version"] < "005_maintenance.sql":
         raise HTTPException(503, "Database schema is not ready")
     return {"status": "ready"}
 
 
 public = Path(__file__).parent / "public"
-if public.is_dir():
+if public.is_dir() and not os.getenv("VERCEL"):
     app.mount("/", StaticFiles(directory=public, html=True), name="web")

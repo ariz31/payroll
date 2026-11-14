@@ -1,6 +1,6 @@
 # Functional specification
 
-**Status:** blueprint-derived requirements (SiteGuard QR §§2–6). UI structures and technical mechanics below marked **proposed** remain implementation choices.
+Blueprint-derived requirements (SiteGuard QR §§2–6). See the [operator guide](../engineering/OPERATIONS_GUIDE.md) for current behavior.
 
 ## 1. User journeys
 

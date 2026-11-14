@@ -1,0 +1,6 @@
+.venv
+node_modules
+tests
+docs
+db/local-roles.sql
+.env*

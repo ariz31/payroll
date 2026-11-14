@@ -108,7 +108,7 @@ function clock(state) {
 }
 
 function nextClock(previous, status, clientMs) {
-  const offset = status.issued_ms - clientMs;
+  const offset = status.issued_ms - Math.round((clientMs + Date.now()) / 2);
   if (previous && Math.abs(previous.clockOffset - offset) > 90000) {
     throw new Error('Terminal clock changed. Contact your supervisor before continuing.');
   }
@@ -184,7 +184,7 @@ export function queueScan(qr, direction, location, jpeg, localCapturedMs = Date.
     }
     const event = {
       client_event_id: crypto.randomUUID(), generation: state.generation, sequence: state.localSequence + 1,
-      captured_ms: localCapturedMs + state.clockOffset,
+      captured_ms: Math.max(state.issued_ms, localCapturedMs + state.clockOffset),
       latitude_e6: location ? Math.round(location.latitude * 1e6) : null,
       longitude_e6: location ? Math.round(location.longitude * 1e6) : null,
       accuracy_mm: location ? Math.round(location.accuracy * 1000) : null,

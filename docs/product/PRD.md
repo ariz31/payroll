@@ -1,7 +1,7 @@
 # Product requirements document (PRD)
 
 **Product:** SiteGuard QR — Time-In/Time-Out and Timekeeper Verification System  
-**Version:** 0.1 documentation baseline · **Status:** planned · **Source:** supplied blueprint §§1–6.
+**Version:** 1.0 · **Source:** supplied blueprint §§1–6. See the [operator guide](../engineering/OPERATIONS_GUIDE.md) for the implemented workflows.
 
 ## 1. Product problem and goal
 

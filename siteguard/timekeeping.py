@@ -60,27 +60,36 @@ def duration_hours(delta):
     return (Decimal(delta.days * 86400 + delta.seconds) + Decimal(delta.microseconds) / 1_000_000) / 3600
 
 
+def boundary(day, clock, zone):
+    local = datetime.combine(day, clock)
+    earlier = local.replace(tzinfo=zone, fold=0).astimezone(UTC)
+    later = local.replace(tzinfo=zone, fold=1).astimezone(UTC)
+    if later != earlier and later.astimezone(zone).replace(tzinfo=None) == local:
+        return later
+    return earlier
+
+
 def scheduled(work_date, timezone, shift_type, rules):
     zone = ZoneInfo(timezone)
     if shift_type == DAY:
         start, end_day, end = rules.day_start, work_date, rules.day_end
     else:
         start, end_day, end = rules.night_start, work_date + timedelta(days=1), rules.night_end
-    start_at = datetime.combine(work_date, start, zone).astimezone(UTC)
-    end_at = datetime.combine(end_day, end, zone).astimezone(UTC)
-    return start_at, end_at
+    return boundary(work_date, start, zone), boundary(end_day, end, zone)
 
 
 def assign_day(instant, timezone, shift_type, rules, direction):
     local_date = instant.astimezone(ZoneInfo(timezone)).date()
+    if shift_type == DAY:
+        start, end = scheduled(local_date, timezone, shift_type, rules)
+        inferred = "in" if abs(instant - start) <= abs(instant - end) else "out"
+        return local_date, inferred if direction == "auto" else direction
     candidates = [local_date + timedelta(days=offset) for offset in (-1, 0, 1)]
     slots = [(day, *scheduled(day, timezone, shift_type, rules)) for day in candidates]
-    if direction == "in":
-        nearest = min(slots, key=lambda item: abs(instant - item[1]))
-        return nearest[0], "in"
-    if direction == "out":
-        nearest = min(slots, key=lambda item: abs(instant - item[2]))
-        return nearest[0], "out"
+    if direction != "auto":
+        index = 1 if direction == "in" else 2
+        nearest = min(slots, key=lambda item: abs(instant - item[index]))
+        return nearest[0], direction
     day, start, end = min(slots, key=lambda item: min(abs(instant - item[1]), abs(instant - item[2])))
     return day, "in" if abs(instant - start) <= abs(instant - end) else "out"
 
