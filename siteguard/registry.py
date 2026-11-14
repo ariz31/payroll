@@ -327,6 +327,9 @@ def update_config(payload: Policy, user: Staff):
         version += 1
         db.execute("INSERT INTO policy_versions (org_id,version,settings) VALUES (%s,%s,%s)",
                    (org, version, Jsonb(payload.model_dump(mode="json"))))
+        from .reviews import reproject_active
+
+        reproject_active(db, user, version)
         control(db, org, user["id"], "policy.updated", version)
         return {"version": version, "settings": payload}
 

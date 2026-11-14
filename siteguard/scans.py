@@ -12,6 +12,7 @@ from pydantic import Field
 from .accounts import Input, evidence_enabled
 from .db import lock_org, now, transaction
 from .registry import badge_tag, clean_jpeg, distance, evidence_cipher
+from .reviews import automatically_verify
 from .security import derived_key, digest, previous_secrets, secret
 from .timekeeping import assign_day, policy, scheduled
 
@@ -307,6 +308,7 @@ def ingest(db, payload, device, credential, site, current):
          mac(derived_key("scan-journal"), payload.qr_payload), current, reported, captured, lat, lon, accuracy,
          result, reason, shift, date, valid_chain, actual_hash),
     ).fetchone()
+    automatically_verify(db, result, shift, current)
     if evidence:
         db.execute("INSERT INTO scan_evidence VALUES (%s,%s,%s)",
                    (event_id, evidence_cipher(device["org_id"]).encrypt(evidence),
