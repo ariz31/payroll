@@ -16,7 +16,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 12
+          --health-cmd "pg_isready -U postgres -d postgres" --health-interval 5s --health-timeout 5s --health-retries 12
     env:
       TEST_POSTGRES_URL: postgresql://postgres:postgres@localhost:5432/postgres
     steps:

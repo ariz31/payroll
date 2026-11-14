@@ -5,7 +5,7 @@ import threading
 import time
 import unittest
 from contextlib import contextmanager
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -56,9 +56,7 @@ class BrowserWorkflow(DatabaseTest):
         terminal = self.client.put(API + "/terminals/KIOSK", json={"name": "Gate kiosk", "site_id": "GATE",
                                                                  "latitude": 14.6, "longitude": 121}).json()
         local = datetime.now(ZoneInfo("Asia/Manila"))
-        stable_date = local.date() - timedelta(days=int(local.time().hour == 23 and local.time().minute == 59))
-        stable_period = stable_date.strftime("%Y-%m")
-        return terminal["credential"], badge_code(issued, "STATIC"), stable_period
+        return terminal["credential"], badge_code(issued, "STATIC"), local.strftime("%Y-%m")
 
     def test_kiosk_reloads_offline_then_reviews_and_exports(self):
         credential, qr, period = self.provision()

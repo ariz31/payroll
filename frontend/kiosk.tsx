@@ -58,6 +58,7 @@ export function Kiosk() {
   const video = useRef<HTMLVideoElement>(null);
   const audio = useRef<AudioContext | null>(null);
   const pending = useRef(false);
+  const syncAfterCapture = useRef(false);
   const current = useRef<(token: string) => Promise<void>>(async () => {});
   const lastRead = useRef({ token: '', timestamp: 0 });
 
@@ -82,13 +83,20 @@ export function Kiosk() {
   useEffect(() => {
     void refresh().then(async () => { if (navigator.onLine) await sync(true); })
       .catch((cause: Error) => setError(cause.message));
-    const onlineHandler = () => { if (!pending.current) void sync(true); };
+    const onlineHandler = () => {
+      if (pending.current) syncAfterCapture.current = true;
+      else void sync(true);
+    };
     const offlineHandler = () => setOnline(false);
     window.addEventListener('online', onlineHandler);
     window.addEventListener('offline', offlineHandler);
-    const timer = window.setInterval(() => { if (!pending.current && navigator.onLine) void sync(true); }, 60000);
+    const timer = window.setInterval(() => {
+      if (!pending.current && navigator.onLine) void sync();
+    }, 8000);
+    const renewal = window.setInterval(() => { if (!pending.current && navigator.onLine) void sync(true); }, 60000);
     return () => {
       window.clearInterval(timer);
+      window.clearInterval(renewal);
       window.removeEventListener('online', onlineHandler);
       window.removeEventListener('offline', offlineHandler);
     };
@@ -168,6 +176,10 @@ export function Kiosk() {
       next = { tone: 'error', title: 'Capture failed', detail: (cause as Error).message };
     }
     setFeedback(next); play(next.tone); pending.current = false; setBusy(false);
+    if (syncAfterCapture.current) {
+      syncAfterCapture.current = false;
+      void sync(true);
+    }
     await refresh().catch(() => undefined);
     if (input.current) { input.current.value = ''; input.current.focus(); }
   }
