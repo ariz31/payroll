@@ -78,7 +78,7 @@ def login(payload: Login, request: Request, response: Response):
     with transaction() as db:
         user = db.execute(
             """SELECT u.* FROM staff u JOIN organizations o ON o.id = u.org_id
-            WHERE o.slug = %s AND u.login = %s AND u.active""",
+            WHERE o.slug = %s AND u.login = %s AND u.active FOR SHARE OF u""",
             (slug, login_name),
         ).fetchone()
         if not check_password(payload.password, user["password_hash"] if user else None) or not user:

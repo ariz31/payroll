@@ -1,14 +1,29 @@
 {
   "name": "siteguard-qr",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Minimal SiteGuard QR deployment preview (no live attendance backend)",
+  "description": "SiteGuard QR workforce timekeeping and payroll handoff",
   "scripts": {
-    "build": "node scripts/verify-static.mjs",
-    "test": "node scripts/verify-static.mjs"
+    "build": "vite build",
+    "test": "tsc --noEmit && node --check frontend/static/sw.js"
   },
   "engines": {
     "node": ">=22"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "5.3.0",
+    "@zxing/browser": "0.2.1",
+    "@zxing/library": "0.23.0",
+    "lucide-react": "0.577.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.15",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.2.3",
+    "typescript": "5.9.3",
+    "vite": "6.4.6"
   }
 }

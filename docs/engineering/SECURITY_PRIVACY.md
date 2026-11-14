@@ -1,6 +1,6 @@
 # Security, privacy and audit requirements
 
-**Status:** required safeguards and proposed controls for an unimplemented system. This does not certify legal compliance. Basis: blueprint §§1–5.
+The controls below describe the threat model and rollout requirements from blueprint §§1–5. See the [operator guide](OPERATIONS_GUIDE.md) and [architecture](../architecture/SYSTEM_ARCHITECTURE.md) for deployed controls and configuration.
 
 ## 1. Assets and trust assumptions
 

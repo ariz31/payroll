@@ -12,7 +12,7 @@ class FoundationTest(DatabaseTest):
     def test_runtime_health_and_repeatable_migration(self):
         migrate(self.owner, self.role)
         self.assertEqual(self.client.get('/api/v1/health/ready').json(), {"status": "ready"})
-        self.assertIn('SiteGuard QR', self.client.get('/').text)
+        self.assertEqual(self.client.get('/api/openapi.json').json()['info']['title'], 'SiteGuard QR')
 
     def test_roles_sites_sessions_and_no_cross_origin_writes(self):
         self.site()

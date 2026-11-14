@@ -1,6 +1,6 @@
 # QR credential, kiosk, geofence and offline sync specification
 
-**Status:** signed token grammars and defaults from blueprint §§2–3; detailed cryptographic protocol and reconnection behavior are **proposed** until agreed in ADRs.
+Signed token formats and defaults come from blueprint §§2–3. The [API contract](../api/API_CONTRACT.md) defines the implemented wire payload; the [decision register](../engineering/DECISIONS_AND_OPEN_QUESTIONS.md) records the trust model, clock and retention defaults.
 
 ## 1. Credential formats (source)
 

@@ -90,4 +90,4 @@ The six source cases are enumerated in [Business rules](BUSINESS_RULES.md) and [
 
 ## 7. Form 48
 
-The blueprint lists a printable Civil Service Form No. 48 generator as a target. Form layout, signatory declarations, official approval, attendance conversion and jurisdiction-specific requirements have **not** been supplied. Build only after owner/agency compliance review; keep it a separate output contract.
+The printable draft follows the day, morning, afternoon and undertime columns shown in [the published government reference](https://bangsamoro.gov.ph/wp-content/uploads/2024/12/Appendix-24-Daily-Time-Record-DTR.pdf). It fills verified gate boundary times and lists overnight times separately. The agency supplies the official schedule, missing lunch intervals, undertime, and signatures before accepting the form.

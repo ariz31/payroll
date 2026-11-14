@@ -1,4 +1,26 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "fastapi"
+  "framework": "fastapi",
+  "buildCommand": "npm ci --include=dev && npm run build",
+  "crons": [{ "path": "/api/v1/internal/daily", "schedule": "15 3 * * *" }],
+  "headers": [
+    {
+      "source": "/((?!api/).*)",
+      "crons": [{ "path": "/api/v1/internal/daily", "schedule": "15 3 * * *" }],
+  "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "no-referrer" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Permissions-Policy", "value": "camera=(self), geolocation=(self), microphone=()" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'self'; media-src 'self' blob:; worker-src 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; base-uri 'none'" }
+      ]
+    },
+    {
+      "source": "/:script(sw.js|shell-manifest.js)",
+      "crons": [{ "path": "/api/v1/internal/daily", "schedule": "15 3 * * *" }],
+  "headers": [
+        { "key": "Cache-Control", "value": "no-cache" }
+      ]
+    }
+  ]
 }

@@ -1,6 +1,6 @@
 # Engineering implementation roadmap
 
-**Status:** recommended sequence; no source code is present at documentation baseline. This is a build plan, not evidence of completion.
+This records the original build sequence and rollout gates. See the [operator guide](../engineering/OPERATIONS_GUIDE.md) for available workflows and the [test plan](../engineering/TEST_PLAN.md) for verification coverage.
 
 ## Build phases
 

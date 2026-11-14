@@ -1,85 +1,44 @@
-# Deploy the minimal preview on Vercel
+# Deploy SiteGuard QR on Vercel
 
-**Current state:** deployable **static** SiteGuard QR UI shell. There is no React build or FastAPI service at this milestone, and no database, QR attendance capture or payroll export functionality. It is intentionally a low-risk first deployment.
+The repository uses Vercel’s FastAPI framework and builds the React interface into `public/`. Vercel serves the static assets and routes `/api/v1/*` to `app.py`. PostgreSQL persists attendance across function invocations.
 
-## What is deployed?
+## Configure PostgreSQL
 
-The public site serves `public/index.html`, `public/styles.css`, `public/app.js`, and `public/favicon.svg`. Overview, QR Timekeeping, Verification and Payroll Exports are navigable client-side preview panels; non-implemented capabilities are labeled as planned.
+1. Create a dedicated PostgreSQL 16+ database. A hosted provider such as [Neon on Vercel](https://vercel.com/docs/postgres) can supply connection strings.
+2. Create a login role for the application with a strong password and ordinary login access. Use a separate owner connection for schema migrations. Avoid giving the runtime role membership in the migration owner role.
+3. Run migrations and create the first administrator from a trusted terminal with the production database owner URL set in the environment.
 
-The app uses no third-party runtime/development packages, needs no environment variables and makes no API calls. The npm build script checks that Vercel assets and route panels exist and that the client JavaScript parses.
+   ```bash
+   pip install -r requirements.txt
+   python -m siteguard migrate --runtime-role siteguard
+   python -m siteguard bootstrap --organization your-org --name "Your Organization" --login admin
+   ```
 
-## Vercel settings
+Reserve one database per environment. Use a TLS connection string for the runtime. On installations with burst traffic, use a transactional pool endpoint for the limited runtime role, keeping the migration connection direct. Assign the project and database regions near one another.
 
-The repository includes **`vercel.json`**:
+## Configure Vercel
 
-```json
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": null,
-  "outputDirectory": "public",
-  "buildCommand": "npm run build"
-}
-```
+Open the linked [payroll project](https://vercel.com/arizs-projects-65ffe174/payroll). The root of the repository is the root directory. Clear old overrides for the framework, static output directory, install command, or build command so this repository’s FastAPI settings can take effect.
 
-`framework: null` selects Vercel **Other**; `public` is served unchanged, so there is no asset compilation step. Node.js **22+** is required for the repository's npm script and is declared in `package.json`.
-
-| Setting | Value |
+| Variable | Purpose |
 | --- | --- |
-| Git repository | `ariz31/payroll` |
-| Production branch | `main` |
-| Project root | `./` (repository root) |
-| Framework Preset | **Other** |
-| Install command | `npm ci` (with committed lockfile, no package dependencies) |
-| Build command | `npm run build` |
-| Output directory | `public` |
-| Environment variables | **None** for preview |
-| SPA rewrites | Not needed; tabs use `#overview`, `#kiosk`, `#reviews`, `#exports` |
+| `DATABASE_URL` | Runtime connection string for the application role |
+| `SITEGUARD_SECRET` | Independent random value of at least 32 bytes for signing and encryption. Generate it with `openssl rand -hex 48` |
+| `SITEGUARD_ORIGIN` | Canonical HTTPS origin when using custom-domain restrictions or SSO |
+| `CRON_SECRET` | Independent random secret for the daily cleanup function |
+| `SITEGUARD_EVIDENCE_ENABLED` | Set to `true` when approved sites should offer camera evidence |
+| `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` | Trusted issuer and confidential client configuration for optional SSO |
+| `SITEGUARD_PREVIOUS_SECRETS` | Comma-separated previous signing roots during a planned rotation |
 
-## Deploy from Vercel dashboard
+Keep `MIGRATION_DATABASE_URL` with the operator running migrations. Configure production and preview with separate application secrets and separate databases. Deployment Protection can stay enabled when all users and gate browsers have the associated Vercel access. Teams that use a managed workforce domain should arrange access to that domain with the Vercel project owner.
 
-1. Sign in at [Vercel](https://vercel.com), select **Add New → Project**.
-2. Import **[ariz31/payroll](https://github.com/ariz31/payroll)** from GitHub; authorize access if required.
-3. Keep the **Root Directory** at the repository root. Confirm **Framework Preset: Other**.
-4. Confirm output directory **public** and build command **npm run build** (already committed to `vercel.json`).
-5. No environment variables are needed. Select **Deploy**.
-6. Open the generated `*.vercel.app` URL and verify that the Overview loads, tabs switch correctly, and static styles/icon load.
-7. If the Git integration is enabled, later pushes to `main` trigger production builds. Review logs and deployment status in Vercel after each change.
+Deploy `main` after setting environment variables. Vercel's [FastAPI documentation](https://vercel.com/docs/frameworks/backend/fastapi) covers routing, build and static file behavior. Its [environment settings](https://vercel.com/docs/environment-variables) take effect on a new deployment.
 
-**Important:** Repository changes do not by themselves create a hosted site. This is ready for the user to import; deployment is not asserted until Vercel returns a successful deployment.
+## Smoke check after deployment
 
-## Local smoke check
+1. Open the deployment’s canonical URL in an authorized browser. Confirm the Sign in page loads.
+2. Check `GET /api/v1/health/live` for `{"status":"ok"}` and `GET /api/v1/health/ready` for `{"status":"ready"}`. A Vercel access page indicates Deployment Protection. A SiteGuard readiness error points to the runtime database, missing migrations, or signing configuration.
+3. Use a synthetic account and badge to complete a shift, review it, and download both export formats. Confirm a pending employee remains on hold.
+4. Check Vercel function logs for database, scan, and export failures and verify that daily retention runs with the configured `CRON_SECRET`.
 
-```bash
-npm ci
-npm run build
-npm test
-python3 -m http.server 4173 --directory public
-```
-
-Then visit [http://localhost:4173](http://localhost:4173), and try all four sections. A static server is sufficient. `npm run build` is intentionally just a **validation step**, because static files are already in the output folder.
-
-## First-deploy acceptance checklist
-
-- [ ] Vercel deployment status **Ready** (not merely GitHub commit success).
-- [ ] Root route `/` renders without 404.
-- [ ] `/styles.css`, `/app.js` and `/favicon.svg` return 200.
-- [ ] Hash routes `/#overview`, `/#kiosk`, `/#reviews`, `/#exports` display expected panels.
-- [ ] Layout is usable on desktop and mobile.
-- [ ] Browser console has no JS errors, blocked resources, or unexpected network requests.
-- [ ] Clearly marked **preview-only** status; no implied real employee data, QR scanning or payroll calculations.
-- [ ] Vercel project is connected to `main` for automatic future deploys.
-
-## Troubleshooting
-
-| Issue | Check |
-| --- | --- |
-| Build cannot locate files | Project root must be repository root; output directory `public` |
-| Build reports missing asset or JS syntax | `npm run build` shows the asset/test that failed |
-| Vercel serves repository instead of app | Framework must be Other; `vercel.json` must remain at repo root |
-| Site 404 | Confirm deployment succeeded and `public/index.html` is committed |
-| Blank panel / broken navigation | Confirm `/app.js` served correctly, check browser console and URL hash |
-| Deployment cannot be started | Connect GitHub account/repository in Vercel; no Vercel project credentials are stored here |
-
-## Next phase
-
-Implement React 18 + TypeScript, FastAPI, PostgreSQL and immutable scan/review/export mechanics as described in the [PRD](../product/PRD.md) and [roadmap](../product/ROADMAP.md), replacing the static shell in a separately tested transition. Do not add live employee data before security and privacy decisions are approved.
+On self-hosted installations, schedule `python -m siteguard purge-expired-images` with the runtime configuration. See [deployment operations](DEPLOYMENT_OPERATIONS.md) for launch and recovery.

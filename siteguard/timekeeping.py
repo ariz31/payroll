@@ -60,15 +60,22 @@ def duration_hours(delta):
     return (Decimal(delta.days * 86400 + delta.seconds) + Decimal(delta.microseconds) / 1_000_000) / 3600
 
 
+def boundary(day, clock, zone):
+    local = datetime.combine(day, clock)
+    earlier = local.replace(tzinfo=zone, fold=0).astimezone(UTC)
+    later = local.replace(tzinfo=zone, fold=1).astimezone(UTC)
+    if later != earlier and later.astimezone(zone).replace(tzinfo=None) == local:
+        return later
+    return earlier
+
+
 def scheduled(work_date, timezone, shift_type, rules):
     zone = ZoneInfo(timezone)
     if shift_type == DAY:
         start, end_day, end = rules.day_start, work_date, rules.day_end
     else:
         start, end_day, end = rules.night_start, work_date + timedelta(days=1), rules.night_end
-    start_at = datetime.combine(work_date, start, zone).astimezone(UTC)
-    end_at = datetime.combine(end_day, end, zone).astimezone(UTC)
-    return start_at, end_at
+    return boundary(work_date, start, zone), boundary(end_day, end, zone)
 
 
 def assign_day(instant, timezone, shift_type, rules, direction):

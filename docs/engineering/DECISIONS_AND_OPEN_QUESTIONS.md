@@ -2,6 +2,26 @@
 
 **State:** initial open-decision log. The source blueprint gives goals and sample logic, not a fully executable protocol. Unresolved questions are visible here by design.
 
+## Implemented defaults
+
+| Area | Default |
+| --- | --- |
+| Time and shift closure | Full UTC instants, IANA site work dates and schedule boundaries, 60-minute missing-out grace, and a duration shorter than 24 hours. Ambiguous schedule times use the later occurrence. Nonexistent schedule times move forward by the local gap. |
+| Tap pairing | One shift per employee and work date, exact 300 seconds included in the default debounce, nearest scheduled boundary with an explicit terminal direction option. Conflicts with a row already in review are quarantined. |
+| Signing | Blueprint 16-hex HMAC-SHA256 tag, purpose-separated roots and per-badge IDs. Dynamic default is 30 seconds with one window of drift. Static credentials can be copied and require operational identity controls. |
+| Offline | 24-hour default signed lease and 90-second synchronization tolerance at enrollment. AES-GCM encrypted IndexedDB and terminal HMAC bind queued records to the ordered capture chain. Missing/expired leases and invalid chain data require reconciliation. |
+| Reviews | Explicit foreman, engineer and timekeeper scopes. Complete clean rows may use timekeeper bulk verification or the optional automated policy. Policy changes invalidate active reviews. |
+| Exports | Two-decimal half-up rounding, exact 23 fields, blank missing times, CRLF CSV and typed XLSX. CSV adds an apostrophe to formula-like or already apostrophe-prefixed text. XLSX preserves literal text. Employee holds span all sites in the organization. |
+| Camera | Disabled by default. Enabled environments still require a site notice and retention setting. Stored images are encrypted and compared by authorized people. |
+| Form 48 | Printable draft from gate evidence. Agency approval, missing intervals, undertime and signatures are deployment responsibilities. |
+| Hosting | FastAPI and React on Vercel, or Uvicorn behind a TLS proxy. Dedicated PostgreSQL, isolated environments, optional RS256 OIDC and runtime role grants. |
+
+A signed lease bounds when a reported scan occurred. It relies on the integrity of the enrolled browser and its operating system. Browser location and optional images support field review. A high-assurance deployment may need managed device time, geolocation attestation, and stronger badge protocols.
+
+## Deployment decisions requiring the operator
+
+Approve the site-specific camera notice and retention, pay policy, workforce access, Form 48 usage, backup controls and payroll import. The blueprint classifies night-shift regular hours in the export; the payroll consumer applies the approved statutory and contractual compensation rules. The historical design questions below record the issues the blueprint left open.
+
 ## 1. Critical decisions before production
 
 | ADR | Priority | Decision required | Why it matters / recommended next step |

@@ -1,10 +1,11 @@
 import argparse
 import getpass
 import os
+import re
 from uuid import uuid4
 
 from .db import control, migrate, transaction
-from .security import hash_password, validate_code
+from .security import LOGIN_PATTERN, hash_password, validate_code
 
 
 def main():
@@ -19,13 +20,10 @@ def main():
     bootstrap.add_argument("--login", required=True)
     args = parser.parse_args()
     if args.command == "purge-expired-images":
-        with transaction() as db:
-            scans = db.execute("DELETE FROM scan_evidence WHERE expires_at<=clock_timestamp()").rowcount
-            badges = db.execute("DELETE FROM profile_evidence WHERE expires_at<=clock_timestamp()").rowcount
-            db.execute("DELETE FROM sessions WHERE expires_at<=clock_timestamp()")
-            # Offline leases last at most 48 hours. An extra day covers time drift and operational retries.
-            db.execute("DELETE FROM dynamic_uses WHERE step < floor(extract(epoch FROM now()-interval '72 hours')/120)")
-        print(f"Removed {scans} scan images and {badges} badge images.")
+        from .maintenance import cleanup
+
+        deleted = cleanup()
+        print(f"Removed {deleted['scan_images']} scan images and {deleted['badge_images']} badge images.")
         return
     dsn = os.getenv("MIGRATION_DATABASE_URL")
     if not dsn:
@@ -37,6 +35,10 @@ def main():
     slug = args.organization.lower()
     if not validate_code(slug):
         parser.error("Organization must be a valid code")
+    if not re.fullmatch(LOGIN_PATTERN, args.login):
+        parser.error("Initial login must be a username or email address")
+    if not args.name.strip() or len(args.name.strip()) > 120:
+        parser.error("Organization name must contain 1 to 120 characters")
     password = getpass.getpass("Initial administrator password: ")
     if not 12 <= len(password) <= 256:
         parser.error("Password must contain 12 to 256 characters")

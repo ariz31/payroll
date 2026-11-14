@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0
+
+- Added the PostgreSQL-backed FastAPI service and React workbench for Vercel and self-hosted deployment.
+- Implemented employee, terminal, badge and policy administration, signed static and rotating badges, geofenced gate capture, and encrypted offline sync.
+- Added scoped three-tier reviews, non-destructive corrections, bulk and automatic verification, and append-only audit history.
+- Added versioned 23-column CSV/XLSX exports with employee holds, checksums and signed receipts, and a printable Form 48 draft.
+- Added optional OIDC and retained camera evidence with audited reads and scheduled cleanup.
+
+
 All notable changes should be recorded here. Versions refer to **documentation/specification** until an application is released.
 
 ## [Unreleased]
