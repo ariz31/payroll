@@ -70,11 +70,14 @@ export function Audit({ session }: { session: Session }) {
   const [offset, setOffset] = useState(0);
   const [result, setResult] = useState('');
   const [site, setSite] = useState('');
-  const scans = useApi<AuditScan[]>(tab === 'scans' ? '/audit/scans' + query({ result, site, offset, limit: 50 }) : null);
+  const [unresolved, setUnresolved] = useState(false);
+  const [selected, setSelected] = useState<AuditScan | null>(null);
+  const [revision, setRevision] = useState(0);
+  const scans = useApi<AuditScan[]>(tab === 'scans' ? '/audit/scans' + query({ result, site, offset, limit: 50, unresolved: unresolved ? 'true' : undefined }) : null, revision);
   const approvals = useApi<Approval[]>(tab === 'approvals' ? '/audit/approvals' + query({ offset, limit: 50 }) : null);
   const controls = useApi<ControlAudit[]>(tab === 'control' ? '/audit/control' + query({ offset, limit: 50 }) : null);
   const data = tab === 'approvals' ? approvals : tab === 'control' ? controls : scans;
-  const switchTab = (value: string) => { setTab(value); setOffset(0); };
+  const switchTab = (value: string) => { setTab(value); setOffset(0); setSelected(null); };
   function applyFilter(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSite(String(new FormData(event.currentTarget).get('site')).trim()); setOffset(0);
@@ -91,13 +94,21 @@ export function Audit({ session }: { session: Session }) {
       {tab === 'scans' && <form className="panel-body filters" onSubmit={applyFilter}>
         <label>Outcome<select value={result} onChange={(event) => { setResult(event.target.value); setOffset(0); }}>
           <option value="">All outcomes</option>{['ACCEPTED_IN', 'ACCEPTED_OUT', 'IGNORED_DEBOUNCE', 'REJECTED', 'QUARANTINED'].map((item) => <option key={item}>{item}</option>)}</select></label>
-        <label>Site code<input name="site" /></label><button className="secondary">Apply filter</button>
+        <label>Site code<input name="site" /></label>
+        <label className="check"><input type="checkbox" checked={unresolved} onChange={(event) => {
+          setUnresolved(event.target.checked); setResult(''); setOffset(0);
+        }} />Unresolved quarantine</label><button className="secondary">Apply filter</button>
       </form>}
       <ErrorNote text={data.error} />
       {data.loading ? <Loading /> : !data.value?.length ? <Empty>No matching events.</Empty> : <div className="table-wrap">
-        {tab === 'scans' && <table><thead><tr><th>Received</th><th>Reported</th><th>Terminal</th><th>Employee</th><th>Outcome</th><th>Reason</th><th>Sequence</th></tr></thead>
+        {tab === 'scans' && <table><thead><tr><th>Received</th><th>Reported</th><th>Terminal</th><th>Employee</th><th>Outcome</th><th>Reason</th><th>Sequence</th><th>Reconciliation</th></tr></thead>
           <tbody>{scans.value?.map((row) => <tr key={row.id}><td>{stamp(row.received_at, undefined, true)}</td><td>{stamp(row.reported_at, undefined, true)}</td>
-            <td>{row.terminal_code}<small>{row.site_id}</small></td><td>{row.employee_id || '—'}</td><td>{row.result}</td><td>{row.reason || '—'}</td><td>{row.sequence ?? '—'}</td></tr>)}</tbody></table>}
+            <td>{row.terminal_code}<small>{row.site_id}</small></td><td>{row.employee_id || '—'}</td><td>{row.result}</td><td>{row.reason || '—'}</td><td>{row.sequence ?? '—'}</td><td>{row.disposition
+                ? <><span>{row.disposition === 'dismissed' ? 'Dismissed' : 'Linked for review'}</span>
+                  <small>{row.actor_login} · {row.reconciliation_notes}</small>
+                  {row.linked_shift && <a href={`#verification/${row.linked_shift}`}>View linked shift</a>}</>
+                : row.result === 'QUARANTINED' && session.role === 'timekeeper'
+                  ? <button className="secondary" onClick={() => setSelected(row)}>Reconcile</button> : '—'}</td></tr>)}</tbody></table>}
         {tab === 'approvals' && <table><thead><tr><th>Recorded</th><th>Employee</th><th>Action</th><th>Actor</th><th>Reason</th></tr></thead>
           <tbody>{approvals.value?.map((row) => <tr key={row.id}><td>{stamp(row.occurred_at, undefined, true)}</td>
             <td><a href={`#verification/${row.shift_id}`}>{row.employee_id}</a><small>{row.site_id}</small></td><td>{approvalName(row.action)}</td><td>{row.actor_name}</td><td>{row.reason}</td></tr>)}</tbody></table>}
@@ -109,7 +120,40 @@ export function Audit({ session }: { session: Session }) {
         <button className="secondary" disabled={!offset} onClick={() => setOffset(offset - 50)}>Previous</button>
         <button className="secondary" disabled={(data.value?.length || 0) < 50} onClick={() => setOffset(offset + 50)}>Next</button></div></footer>
     </section>
+    {selected && tab === 'scans' && <ReconcileForm key={selected.id} row={selected}
+      cancel={() => setSelected(null)} saved={() => { setSelected(null); setRevision((value) => value + 1); }} />}
   </>;
+}
+
+function ReconcileForm({ row, cancel, saved }: { row: AuditScan; cancel: () => void; saved: () => void }) {
+  const [disposition, setDisposition] = useState(row.shift_id ? 'linked_for_review' : 'dismissed');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const values = new FormData(event.currentTarget);
+    setBusy(true); setError('');
+    try {
+      await api(`/audit/scans/${row.id}/reconcile`, { method: 'POST', body: {
+        disposition, notes: String(values.get('notes')).trim(),
+        shift_id: disposition === 'linked_for_review' ? String(values.get('shift_id')).trim() : null,
+      } });
+      saved();
+    } catch (cause) { setError((cause as Error).message); }
+    finally { setBusy(false); }
+  }
+  return <section className="panel">
+    <header className="panel-heading"><div><h2>Reconcile quarantined scan</h2><p>{row.terminal_code} · {row.reason}</p></div></header>
+    <ErrorNote text={error} />
+    <form className="panel-body form-stack" onSubmit={submit}>
+      <label>Decision<select value={disposition} onChange={(event) => setDisposition(event.target.value)}>
+        <option value="dismissed">Dismiss with reason</option><option value="linked_for_review">Link to pending shift</option></select></label>
+      {disposition === 'linked_for_review' && <label>Pending shift ID<input name="shift_id" defaultValue={row.shift_id || ''} required /></label>}
+      <label>Reason and evidence<textarea name="notes" maxLength={1500} rows={3} required /></label>
+      <div className="actions"><button className="primary" disabled={busy}>Save reconciliation</button>
+        <button type="button" className="secondary" onClick={cancel}>Cancel</button></div>
+    </form>
+  </section>;
 }
 
 interface RecordDay {

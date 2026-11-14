@@ -7,7 +7,7 @@ The versioned files in [db/migrations](../../db/migrations) are the schema sourc
 | `organizations`, `sites`, `staff`, `sessions`, `oidc_links` | Organization/site boundaries, human accounts, and identity |
 | `employees`, `assignments`, `badges`, `terminals` | Roster, active site membership, credentials, and gate enrollment |
 | `policy_versions` | Append-only policy definitions. Version 0 uses source defaults |
-| `scan_audit`, `dynamic_uses` | Scan receipts, event chain details, outcomes and dynamic token replay protection |
+| `scan_audit`, `dynamic_uses`, `scan_reconciliations` | Scan receipts, event chain details, outcomes, replay protection and append-only quarantine decisions |
 | `shifts`, `approval_audit` | Work-date pairing, raw and adjusted instants, reviewer transitions, and prior/resulting states |
 | `scan_evidence`, `profile_evidence` | Encrypted image bytes and expiry timestamps |
 | `payroll_exports`, `control_audit` | Immutable period revisions, provisioning, evidence-access and download trail |

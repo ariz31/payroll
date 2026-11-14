@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 
 from fastapi import APIRouter, HTTPException, Query
 from psycopg.errors import CheckViolation, InsufficientPrivilege, SerializationFailure
-from pydantic import AwareDatetime, Field, field_validator
+from pydantic import AwareDatetime, Field, field_validator, model_validator
 
 from .accounts import Code, Input, Staff, evidence_enabled
 from .db import control, lock_org, now, transaction
@@ -45,6 +45,21 @@ class BulkItem(Input):
 class Bulk(Input):
     request_id: UUID
     items: list[BulkItem] = Field(min_length=1, max_length=100)
+
+
+class Reconciliation(Input):
+    disposition: Literal["dismissed", "linked_for_review"]
+    notes: str = Field(min_length=1, max_length=1500)
+    shift_id: UUID | None = None
+
+    @model_validator(mode="after")
+    def validate_decision(self):
+        self.notes = self.notes.strip()
+        if not self.notes:
+            raise ValueError("Record the evidence or reason")
+        if (self.disposition == "linked_for_review") != bool(self.shift_id):
+            raise ValueError("A linked decision requires the pending shift ID")
+        return self
 
 
 def bounds(period):
@@ -176,6 +191,10 @@ def shift_detail(ident: UUID, user: Staff):
         row = project(db, [shift], now())[0]
         if user["role"] != "employee":
             row["history"] = history(db, ident)
+            row["reconciled_scans"] = db.execute(
+                """SELECT event_id, actor_login, decided_at, notes FROM scan_reconciliations
+                WHERE org_id=%s AND shift_id=%s ORDER BY decided_at""", (user["org_id"], ident),
+            ).fetchall()
         if evidence_enabled() and user["role"] in {"timekeeper", "auditor"}:
             row["evidence"] = enrichment(db, shift)
         return row
@@ -235,17 +254,40 @@ def get_evidence(ident: UUID, kind: Literal["badge", "in", "out"], user: Staff):
 
 @router.get("/audit/scans")
 def scan_audit(user: Staff, site: Code | None = None, result: str | None = Query(default=None, max_length=30),
-               offset: int = Query(default=0, ge=0), limit: int = Query(default=100, ge=1, le=250)):
+               unresolved: bool = False, offset: int = Query(default=0, ge=0),
+               limit: int = Query(default=100, ge=1, le=250)):
     require_role(user, "admin", "timekeeper", "auditor")
     with transaction() as db:
         where, params = scoped(user, "a")
         return db.execute(
-            f"""SELECT id,terminal_code,site_id,employee_id,client_event_id,generation,sequence,event_hash,received_at,
-             reported_at,effective_at,result,reason,shift_id,work_date,chain_advanced
-             FROM scan_audit a WHERE {where} AND (%s::text IS NULL OR site_id=%s)
-             AND (%s::text IS NULL OR result=%s) ORDER BY received_at DESC,id LIMIT %s OFFSET %s""",
-            (*params, site, site, result, result, limit, offset),
+            f"""SELECT a.id,a.terminal_code,a.site_id,a.employee_id,a.client_event_id,a.generation,a.sequence,
+             a.event_hash,a.received_at,a.reported_at,a.effective_at,a.result,a.reason,a.shift_id,a.work_date,
+             a.chain_advanced,r.disposition,r.shift_id AS linked_shift,r.actor_login,r.notes AS reconciliation_notes
+             FROM scan_audit a LEFT JOIN scan_reconciliations r ON r.event_id=a.id
+             WHERE {where} AND (%s::text IS NULL OR a.site_id=%s)
+             AND (%s::text IS NULL OR a.result=%s)
+             AND (NOT %s OR (a.result='QUARANTINED' AND r.event_id IS NULL))
+             ORDER BY a.received_at DESC,a.id LIMIT %s OFFSET %s""",
+            (*params, site, site, result, result, unresolved, limit, offset),
         ).fetchall()
+
+
+@router.post("/audit/scans/{ident}/reconcile")
+def reconcile(ident: UUID, payload: Reconciliation, user: Staff):
+    require_role(user, "timekeeper")
+    with transaction() as db:
+        lock_org(db, user["org_id"])
+        where, params = scoped(user, "a")
+        if not db.execute(f"SELECT 1 FROM scan_audit a WHERE {where} AND a.id=%s AND result='QUARANTINED'",
+                          (*params, ident)).fetchone():
+            raise HTTPException(404, "Quarantined scan not found")
+        try:
+            return db.execute("SELECT * FROM reconcile_scan(%s,%s,%s,%s,%s)",
+                              (ident, user["id"], payload.disposition, payload.notes, payload.shift_id)).fetchone()
+        except SerializationFailure:
+            raise HTTPException(409, "This scan already has a reconciliation decision") from None
+        except CheckViolation as exc:
+            raise HTTPException(409, exc.diag.message_primary or "This reconciliation is invalid") from None
 
 
 @router.get("/audit/approvals")

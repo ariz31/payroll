@@ -12,7 +12,7 @@
 
 Start the camera or connect a USB scanner in keyboard-wedge mode with Enter as its suffix. Use **Auto-detect** for routine arrivals and departures. Select **Clock in** or **Clock out** when a shift cannot be identified reliably by proximity. A recorded banner appears after a durable server receipt. **Offline Captured & Sealed** means the event is in the local outbox.
 
-Keep the gate browser profile on the same site origin. Leave the tab open after reconnection or use **Sync now**. Compare the pending and quarantine counts to the **Scan ledger**. Download quarantine receipts before clearing copies that the server has already acknowledged. A mismatch in the device chain requires a supervisor to reconcile the local queue and ledger before any credential rotation.
+Keep the gate browser profile on the same site origin. Leave the tab open after reconnection or use **Sync now**. Compare the pending and quarantine counts to the **Scan ledger**. Timekeepers can filter for unresolved quarantine in the ledger and record a dismissal or link to a pending shift. Linked evidence appears in the shift details and can inform the existing review and adjustment workflow. Download quarantine receipts before clearing copies that the server has already acknowledged. A mismatch in the device chain requires a supervisor to reconcile the local queue and ledger before any credential rotation.
 
 If a device is retired, disable it in **Administration → Terminals**. Before rotating a functioning terminal’s credential, let queued scans sync and archive any acknowledged quarantine receipts. Re-enroll on the intended device.
 
