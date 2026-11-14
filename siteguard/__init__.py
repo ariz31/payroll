@@ -1,0 +1,1 @@
+"""SiteGuard QR timekeeping service."""
