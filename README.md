@@ -1,6 +1,6 @@
 # SiteGuard QR — Workforce Timekeeping & Payroll Audit Handoff
 
-> **Project stage:** Specification / documentation baseline. This repository had no application code, build files, database migrations, or tests when this documentation was established (2026-11-14). Everything described as *planned* requires implementation and verification.
+> **Project stage:** Initial deployable preview. The repository now contains a **dependency-free static application shell** in `public/`, with a working Vercel build check. No QR scanning, backend, database, employee records, approvals or payroll exports are implemented.
 
 SiteGuard QR is a proposed tamper-evident QR attendance and timekeeper verification platform for construction sites and government engineering offices. Its purpose is to capture clock-in/clock-out events, preserve original evidence, detect exceptions, route approvals, and prepare a **23-column payroll-ready attendance handoff**. It **does not calculate taxes, generate payslips, or disburse money**.
 
@@ -22,6 +22,7 @@ SiteGuard QR is a proposed tamper-evident QR attendance and timekeeper verificat
 | [API contract](docs/api/API_CONTRACT.md) | **Proposed** REST endpoints and payloads |
 | [Development guide](docs/engineering/DEVELOPMENT.md) | Suggested project layout and bootstrap plan |
 | [Deployment and operations](docs/engineering/DEPLOYMENT_OPERATIONS.md) | Planned environments, monitoring, recovery |
+| [Vercel preview deployment](docs/engineering/VERCEL_DEPLOYMENT.md) | Current deployable static site, configuration and deployment steps |
 | [Security and privacy](docs/engineering/SECURITY_PRIVACY.md) | Threat model, sensitive snapshots, audit controls |
 | [Test strategy and fixtures](docs/engineering/TEST_PLAN.md) | Acceptance matrix and six blueprint examples |
 | [Decisions and open questions](docs/engineering/DECISIONS_AND_OPEN_QUESTIONS.md) | Unresolved ambiguities and ADR process |
@@ -62,9 +63,23 @@ The proposed frontend uses Tailwind CSS. The reference workday is 08:00–17:00,
 5. Require field endorsement, departmental/project review and final timekeeper verification where applicable.
 6. Export every reviewed/pending/disputed record with exact status; **payable hours are summed only for `Verified` rows**. Any employee with a `Pending Review` row in a period is on **AUDIT HOLD** for that period.
 
-## Getting started
+## Run the minimal preview
 
-**There is not yet a runnable application.** Do not expect `npm install`, `uvicorn`, migrations, or Docker Compose to work until corresponding source and manifests are contributed. A recommended future layout is `apps/kiosk`, `apps/workbench`, `services/api`, `db/migrations`, and `tests`; see [development](docs/engineering/DEVELOPMENT.md).
+The current Vercel-ready preview is a **static UI**, not the future React/FastAPI application. Its navigation works locally, but attendance and payroll capabilities are intentionally inactive.
+
+```bash
+npm ci
+npm run build
+npm test
+# Preview public/index.html using any static server, for example:
+python3 -m http.server 4173 --directory public
+```
+
+Open `http://localhost:4173`. There are **no application dependencies or environment variables** for this preview. The build validates required assets and JavaScript syntax instead of compiling a framework.
+
+**Deploy:** import [ariz31/payroll](https://github.com/ariz31/payroll) into Vercel. Repository root is the project root; `vercel.json` sets Framework Preset **Other**, Build Command **`npm run build`**, Output Directory **`public`**. A GitHub/Vercel connection is required to create a live deployment. Detailed instructions: [Vercel deployment](docs/engineering/VERCEL_DEPLOYMENT.md).
+
+A recommended future application layout is `apps/kiosk`, `apps/workbench`, `services/api`, `db/migrations`, and `tests`; see [development](docs/engineering/DEVELOPMENT.md).
 
 For implementation work:
 
@@ -75,7 +90,7 @@ For implementation work:
 
 ## Scope and caveats
 
-- The blueprint provides target behavior, **not evidence of a deployed or compliant system**.
+- The blueprint provides target behavior, **not evidence of a deployed or compliant system**. The static Vercel preview is a navigation shell only, not a working timekeeping service.
 - GPS verification of a fixed kiosk proves terminal position, **not automatically the worker's identity**; face snapshots and identity checks require privacy review and consent/notice policy.
 - Government Form 48 compatibility is a **target output**, not a legal certification. Attendance, overtime, night differential and privacy requirements must be reviewed for the actual jurisdiction, employer and collective/contractual rules.
 - The blueprint's commercial leakage estimates, prices and ROI illustration are planning assumptions, not verified outcome guarantees.

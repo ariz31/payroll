@@ -5,6 +5,9 @@ All notable changes should be recorded here. Versions refer to **documentation/s
 ## [Unreleased]
 
 ### Added
+- Minimal Vercel-deployable static app shell (`public/`), with responsive navigation and clearly marked placeholder modules.
+- Zero-dependency npm build validation, Vercel project configuration and CI verification workflow.
+- Vercel deployment instructions (no hosting connection or production URL claimed).
 - Initial README and documentation index, with explicit “unimplemented” status.
 - PRD, functional specification and prioritized engineering roadmap.
 - Architecture, logical schema and non-destructive database integrity requirements.
@@ -17,7 +20,7 @@ All notable changes should be recorded here. Versions refer to **documentation/s
 - Contributor and security reporting guidance.
 
 ### Known limitations
-- No application runtime, database migrations, test suite, CI or production deployment is included.
+- The static preview has a runnable UI and smoke checks, but no React/FastAPI domain application, database migrations, end-to-end feature tests, or verified live Vercel deployment is included.
 - Some blueprint requirements have unresolved security, privacy, policy and calculation interpretation decisions. See [Decisions](docs/engineering/DECISIONS_AND_OPEN_QUESTIONS.md).
 
 ## Format

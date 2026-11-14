@@ -1,6 +1,6 @@
 # Developer guide and repository bootstrap
 
-**Repository state (2026-11-14):** documentation only. No frontend, API, database migrations, package manager manifests, test runner or CI has been created. The steps below are a **proposed bootstrap plan**, not executable installation instructions.
+**Repository state (2026-11-14):** the repository has a **static HTML/CSS/JavaScript Vercel preview** in `public/`, an npm-based zero-dependency build check and GitHub Actions verification. No React frontend, FastAPI backend, database migrations or functional timekeeping tests exist. The stack below remains a **proposed bootstrap plan**. See [Vercel deployment](VERCEL_DEPLOYMENT.md).
 
 ## 1. Target stack (source)
 
@@ -39,6 +39,17 @@ Libraries beyond these (e.g., React bundler, Python dependency manager, ORM, Ale
 ├── infra/                 # deploy manifests when selected
 └── .github/workflows/     # CI when tooling exists
 ```
+
+## Current preview commands
+
+```bash
+npm ci
+npm run build  # verifies static assets and JavaScript syntax
+npm test       # same lightweight smoke verification
+python3 -m http.server 4173 --directory public
+```
+
+Open http://localhost:4173 to inspect the preview. No environment variables or external services are required. The current app is a temporary static deployment shell, **not a replacement for the React 18/TypeScript target architecture**.
 
 ## 3. Initial implementation steps
 

@@ -1,6 +1,6 @@
 # Documentation index
 
-**Status:** specification baseline (2026-11-14), not a description of implemented software. **Authority:** supplied *SiteGuard QR — Complete Technical & Commercial Blueprint*, pp. 1–7. “Required” means required by that blueprint; “proposed” means a recommended design to implement; “open” means an unresolved decision. Avoid describing an unbuilt feature as live.
+**Status:** initial deployable **static preview** plus specification baseline (2026-11-14). The preview is **not** the full timekeeping application; all domain services remain unimplemented. **Authority:** supplied *SiteGuard QR — Complete Technical & Commercial Blueprint*, pp. 1–7. “Required” means required by that blueprint; “proposed” means a recommended design to implement; “open” means an unresolved decision. Avoid describing an unbuilt feature as live.
 
 ## Start here
 
@@ -19,7 +19,7 @@
 - **Design:** [System architecture](architecture/SYSTEM_ARCHITECTURE.md), [Data model](architecture/DATA_MODEL.md).
 - **Normative feature requirements:** [Functional specification](specs/FUNCTIONAL_SPECIFICATION.md), [Business rules](specs/BUSINESS_RULES.md), [QR and offline](specs/QR_SECURITY_AND_OFFLINE.md), [Workflow](specs/WORKFLOW_AND_ROLES.md), [Payroll export](specs/PAYROLL_EXPORT.md).
 - **Proposed interfaces:** [REST API](api/API_CONTRACT.md).
-- **Engineering:** [Development](engineering/DEVELOPMENT.md), [Operations](engineering/DEPLOYMENT_OPERATIONS.md), [Security/privacy](engineering/SECURITY_PRIVACY.md), [Tests](engineering/TEST_PLAN.md), [Decisions](engineering/DECISIONS_AND_OPEN_QUESTIONS.md).
+- **Engineering:** [Development](engineering/DEVELOPMENT.md), [Vercel preview deploy](engineering/VERCEL_DEPLOYMENT.md), [Operations](engineering/DEPLOYMENT_OPERATIONS.md), [Security/privacy](engineering/SECURITY_PRIVACY.md), [Tests](engineering/TEST_PLAN.md), [Decisions](engineering/DECISIONS_AND_OPEN_QUESTIONS.md).
 - **Business context:** [Commercial overview](commercial/COMMERCIAL_OVERVIEW.md).
 - **Governance:** [Contributing](../CONTRIBUTING.md), [Security reporting](../SECURITY.md), [Changelog](../CHANGELOG.md).
 
