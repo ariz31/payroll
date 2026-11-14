@@ -31,7 +31,8 @@ Timekeepers can bulk-verify complete, clean shifts. A timekeeper can reopen a fi
 1. In **Payroll exports**, review pending shifts, held employee IDs, verified hours, and releasable hours.
 2. Generate CSV or XLSX. Download the revision and retain its receipt with the handoff.
 3. Use the exact 23-column table for attendance import. Apply the receipt’s employee hold list before releasing anything to downstream payroll. For a site-specific export, the hold list still considers pending shifts elsewhere in the organization.
-4. Use **Daily time record** for printable draft output. The draft uses verified gate punches. The receiving agency supplies its approved schedule, missing lunch intervals, undertime, and signatures.
+4. For automated imports, an organization administrator can issue a read-only credential in **Administration → Payroll API**. Use the [period API](../api/API_CONTRACT.md#payroll-integration) to retrieve employee totals after hold gating.
+5. Use **Daily time record** for printable draft output. The draft uses verified gate punches. The receiving agency supplies its approved schedule, missing lunch intervals, undertime, and signatures.
 
 ## Optional camera evidence and SSO
 

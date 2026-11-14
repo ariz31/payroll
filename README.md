@@ -4,7 +4,7 @@ SiteGuard QR records attendance at registered gates, routes shift exceptions thr
 
 - **Gate kiosk.** USB scanner and camera input, signed static and rotating badges, terminal geofencing, and an encrypted offline outbox.
 - **Verification.** Day and overnight shifts, anomaly detection, foreman and engineer review, timekeeper decisions, and justified corrections with raw punches retained.
-- **Payroll.** CSV and XLSX with all attendance statuses, verified-hour totals, organization-wide employee holds, signed export receipts, and a printable daily time record draft.
+- **Payroll.** CSV and XLSX with all attendance statuses, verified-hour totals, organization-wide employee holds, signed export receipts, a read-only payroll API, and a printable daily time record draft.
 - **Administration.** Site and terminal enrollment, employee assignments, user scope, badge revocation, policy versions, and audit history.
 
 ## Run locally

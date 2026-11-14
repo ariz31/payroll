@@ -6,6 +6,7 @@ import { Empty, ErrorNote, Heading, Loading, saveLocal, useApi } from './common'
 interface Employee { id: string; name: string; department: string; cost_code: string; crew: string; shift_type: ShiftType; site_ids: string[]; active: boolean }
 interface Terminal { id: string; code: string; name: string; site_id: string; latitude: number; longitude: number; active: boolean; generation: number; credential?: string }
 interface StaffRow { login: string; name: string; role: Role; site_id: string | null; scope_code: string | null; employee_id: string | null; active: boolean }
+interface Integration { id: string; name: string; site_id: string | null; revoked_at: string | null }
 interface Badge { id: string; employee_id: string; mode: 'STC' | 'DYN'; revoked_at: string | null }
 interface BadgeCode { svg: string; employee_id: string; mode: 'STC' | 'DYN'; refresh_after_ms: number | null }
 interface Policy { day_start: string; day_end: string; night_start: string; night_end: string; break_mins: number; regular_hours: string;
@@ -16,7 +17,7 @@ const roles: { id: Role; label: string }[] = [
   { id: 'admin', label: 'Administrator' }, { id: 'foreman', label: 'Site foreman' }, { id: 'engineer', label: 'Project engineer' },
   { id: 'timekeeper', label: 'Timekeeper' }, { id: 'auditor', label: 'Auditor' }, { id: 'employee', label: 'Employee' },
 ];
-const tabs = [['sites', 'Sites'], ['employees', 'Employees'], ['terminals', 'Terminals'], ['badges', 'Badges'], ['users', 'Accounts'], ['config', 'Policy']];
+const tabs = [['sites', 'Sites'], ['employees', 'Employees'], ['terminals', 'Terminals'], ['badges', 'Badges'], ['users', 'Accounts'], ['config', 'Policy'], ['integrations', 'Payroll API']];
 const string = (data: FormData, key: string) => String(data.get(key) || '').trim();
 const number = (data: FormData, key: string) => Number(data.get(key));
 const active = (data: FormData) => data.get('active') === 'on';
@@ -189,7 +190,7 @@ function PolicyForm({ data, submit }: { data: { version: number; settings: Polic
   </form>;
 }
 
-export function Administration() {
+export function Administration({ organizationWide }: { organizationWide: boolean }) {
   const [tab, setTab] = useState('sites');
   const [rev, bump] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -202,10 +203,11 @@ export function Administration() {
   const terminals = useApi<Terminal[]>(tab === 'terminals' ? '/terminals' : null, rev);
   const users = useApi<StaffRow[]>(tab === 'users' ? '/users' : null, rev);
   const badges = useApi<Badge[]>(tab === 'badges' ? '/badges' : null, rev);
+  const integrations = useApi<Integration[]>(tab === 'integrations' ? '/integrations/payroll' : null, rev);
   const rules = useApi<{ version: number; settings: Policy }>(tab === 'config' ? '/config' : null, rev);
   const siteList = sites.value || [];
-  const isLoading = sites.loading || [employees, terminals, users, badges, rules].some((item) => item.loading);
-  const loadingError = [sites, employees, terminals, users, badges, rules].find((item) => item.error)?.error;
+  const isLoading = sites.loading || [employees, terminals, users, badges, rules, integrations].some((item) => item.loading);
+  const loadingError = [sites, employees, terminals, users, badges, rules, integrations].find((item) => item.error)?.error;
   async function write(path: string, body?: object, method = 'PUT') {
     setBusy(true); setError(''); setNote(''); setCredential('');
     try {
@@ -237,13 +239,15 @@ export function Administration() {
   }
   return <>
     <Heading title="Administration">Manage sites, employees, terminals and timekeeping policy.</Heading>
-    <div className="tabs">{tabs.map(([id, label]) => <button key={id} className={tab === id ? 'chosen' : ''} onClick={() => {
+    <div className="tabs">{tabs.filter(([id]) => organizationWide || id !== 'integrations').map(([id, label]) => <button key={id} className={tab === id ? 'chosen' : ''} onClick={() => {
       setTab(id); setError(''); setNote(''); setCredential(''); setBadge(null);
     }}>{label}</button>)}</div>
     <ErrorNote text={error || loadingError} />
     {note && <p className="notice success" role="status">{note}</p>}
-    {credential && <div className="notice warning terminal-credential"><KeyRound size={18} /><div><strong>Terminal credential</strong>
-      <p>Copy this credential into the enrolled kiosk. It is displayed once.</p><input readOnly value={credential} aria-label="Terminal credential" onFocus={(event) => event.currentTarget.select()} />
+    {credential && <div className="notice warning terminal-credential"><KeyRound size={18} /><div><strong>{tab === 'integrations' ? 'Payroll API credential' : 'Terminal credential'}</strong>
+      <p>{tab === 'integrations' ? 'Store this credential in the payroll integration. It is displayed once.' :
+        'Copy this credential into the enrolled kiosk. It is displayed once.'}</p>
+      <input readOnly value={credential} aria-label={tab === 'integrations' ? 'Payroll API credential' : 'Terminal credential'} onFocus={(event) => event.currentTarget.select()} />
     </div></div>}
     <section className="panel">
       <header className="panel-heading"><h2>{tabs.find(([id]) => id === tab)?.[1]}</h2>{isLoading && <Loading />}</header>
@@ -253,6 +257,16 @@ export function Administration() {
         {tab === 'terminals' && <TerminalForm rows={terminals.value || []} sites={siteList} submit={submit} rotate={(code) => void write(`/terminals/${code}/rotate`, undefined, 'POST')} />}
         {tab === 'users' && <UserForm rows={users.value || []} sites={siteList} submit={submit} />}
         {tab === 'config' && rules.value && <PolicyForm key={rules.value.version} data={rules.value} submit={submit} />}
+        {tab === 'integrations' && <form className="filters" onSubmit={(event) => {
+          event.preventDefault();
+          const data = new FormData(event.currentTarget);
+          void write('/integrations/payroll', { name: string(data, 'integration_name'),
+            site_id: string(data, 'site_id') || null }, 'POST');
+        }}>
+          <label>Integration name<input name="integration_name" required maxLength={120} /></label>
+          <label>Site scope<select name="site_id"><option value="">Organization-wide</option><SiteOptions sites={siteList.filter((site) => site.active)} /></select></label>
+          <button className="primary">Issue read-only credential</button>
+        </form>}
         {tab === 'badges' && <form className="filters" onSubmit={(event) => {
           event.preventDefault(); const data = new FormData(event.currentTarget);
           void write('/badges/issue', { employee_id: string(data, 'employee_id'), mode: string(data, 'mode') }, 'POST');
@@ -262,6 +276,12 @@ export function Administration() {
           <button className="primary"><QrCode size={16} />Issue badge</button>
         </form>}
       </fieldset>
+      {tab === 'integrations' && (integrations.value?.length ? <div className="table-wrap"><table>
+        <thead><tr><th>Integration</th><th>Scope</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>{integrations.value.map((row) => <tr key={row.id}><td>{row.name}</td><td>{row.site_id || 'Organization-wide'}</td>
+          <td>{row.revoked_at ? 'Revoked' : 'Active'}</td><td>{!row.revoked_at && <button className="secondary" disabled={busy}
+            onClick={() => { if (window.confirm('Revoke this payroll API credential?')) void write(`/integrations/payroll/${row.id}/revoke`, undefined, 'POST'); }}>Revoke</button>}</td></tr>)}</tbody>
+      </table></div> : <Empty>No payroll API credentials have been issued.</Empty>)}
       {tab === 'badges' && (badges.value?.length ? <div className="table-wrap"><table><thead><tr><th>Employee ID</th><th>Mode</th><th>Status</th><th>Actions</th></tr></thead>
         <tbody>{badges.value.map((row) => <tr key={row.id}><td>{row.employee_id}</td><td>{row.mode === 'DYN' ? 'Dynamic' : 'Static'}</td>
           <td>{row.revoked_at ? 'Revoked' : 'Active'}</td><td>{!row.revoked_at && <div className="actions">

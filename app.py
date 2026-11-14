@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from siteguard.accounts import router as accounts
 from siteguard.db import transaction
 from siteguard.identity import router as identity
+from siteguard.integrations import router as integrations
 from siteguard.maintenance import router as maintenance
 from siteguard.payroll import router as payroll
 from siteguard.reviews import router as reviews
@@ -21,7 +22,7 @@ from siteguard.security import secret
 logger = logging.getLogger("siteguard")
 app = FastAPI(title="SiteGuard QR", version="1.0", docs_url="/api/docs",
               openapi_url="/api/openapi.json", redoc_url=None)
-for router in (accounts, registry, scans, reviews, payroll, identity, maintenance):
+for router in (accounts, registry, scans, reviews, payroll, identity, maintenance, integrations):
     app.include_router(router, prefix="/api/v1")
 
 
@@ -64,7 +65,7 @@ def readiness():
     secret()
     with transaction() as db:
         version = db.execute("SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1").fetchone()
-    if not version or version["version"] < "006_reconciliation.sql":
+    if not version or version["version"] < "007_payroll_integration.sql":
         raise HTTPException(503, "Database schema is not ready")
     return {"status": "ready"}
 

@@ -10,7 +10,7 @@ The versioned files in [db/migrations](../../db/migrations) are the schema sourc
 | `scan_audit`, `dynamic_uses`, `scan_reconciliations` | Scan receipts, event chain details, outcomes, replay protection and append-only quarantine decisions |
 | `shifts`, `approval_audit` | Work-date pairing, raw and adjusted instants, reviewer transitions, and prior/resulting states |
 | `scan_evidence`, `profile_evidence` | Encrypted image bytes and expiry timestamps |
-| `payroll_exports`, `control_audit` | Immutable period revisions, provisioning, evidence-access and download trail |
+| `payroll_exports`, `payroll_integrations`, `control_audit` | Immutable period revisions, provisioning, evidence-access and download trail |
 
 A shift has one site and one employee/work-date key. It retains the site timezone, employee display and authorization attributes, shift type, and terminal from the first associated scan. Future roster and site edits apply to new shifts. Review scopes for an existing shift use its retained values. Active policy updates recalculate unfinished rows and return them to field review.
 

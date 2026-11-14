@@ -119,7 +119,7 @@ function App() {
   let content;
   if (current === 'verification') content = <Verification {...context} selected={path.split('/')[1]} />;
   else if (current === 'payroll') content = <Payroll {...context} />;
-  else if (current === 'administration') content = <Administration />;
+  else if (current === 'administration') content = <Administration organizationWide={!session.site_id} />;
   else if (current === 'audit') content = <Audit session={session} />;
   else if (current === 'badge') content = <MyBadge />;
   else content = <Overview {...context} />;
