@@ -80,14 +80,16 @@ def scheduled(work_date, timezone, shift_type, rules):
 
 def assign_day(instant, timezone, shift_type, rules, direction):
     local_date = instant.astimezone(ZoneInfo(timezone)).date()
+    if shift_type == DAY:
+        start, end = scheduled(local_date, timezone, shift_type, rules)
+        inferred = "in" if abs(instant - start) <= abs(instant - end) else "out"
+        return local_date, inferred if direction == "auto" else direction
     candidates = [local_date + timedelta(days=offset) for offset in (-1, 0, 1)]
     slots = [(day, *scheduled(day, timezone, shift_type, rules)) for day in candidates]
-    if direction == "in":
-        nearest = min(slots, key=lambda item: abs(instant - item[1]))
-        return nearest[0], "in"
-    if direction == "out":
-        nearest = min(slots, key=lambda item: abs(instant - item[2]))
-        return nearest[0], "out"
+    if direction != "auto":
+        index = 1 if direction == "in" else 2
+        nearest = min(slots, key=lambda item: abs(instant - item[index]))
+        return nearest[0], direction
     day, start, end = min(slots, key=lambda item: min(abs(instant - item[1]), abs(instant - item[2])))
     return day, "in" if abs(instant - start) <= abs(instant - end) else "out"
 

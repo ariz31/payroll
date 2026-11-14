@@ -7,7 +7,7 @@
 | Area | Default |
 | --- | --- |
 | Time and shift closure | Full UTC instants, IANA site work dates and schedule boundaries, 60-minute missing-out grace, and a duration shorter than 24 hours. Ambiguous schedule times use the later occurrence. Nonexistent schedule times move forward by the local gap. |
-| Tap pairing | One shift per employee and work date, exact 300 seconds included in the default debounce, nearest scheduled boundary with an explicit terminal direction option. Conflicts with a row already in review are quarantined. |
+| Tap pairing | One shift per employee and work date, exact 300 seconds included in the default debounce, the local date for day shifts, and the nearest scheduled boundary for night shifts when no open shift applies. Conflicts with a row already in review are quarantined. |
 | Signing | Blueprint 16-hex HMAC-SHA256 tag, purpose-separated roots and per-badge IDs. Dynamic default is 30 seconds with one window of drift. Static credentials can be copied and require operational identity controls. |
 | Offline | 24-hour default signed lease and 90-second synchronization tolerance at enrollment. AES-GCM encrypted IndexedDB and terminal HMAC bind queued records to the ordered capture chain. Missing/expired leases and invalid chain data require reconciliation. |
 | Reviews | Explicit foreman, engineer and timekeeper scopes. Complete clean rows may use timekeeper bulk verification or the optional automated policy. Policy changes invalidate active reviews. |

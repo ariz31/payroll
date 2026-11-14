@@ -130,6 +130,17 @@ class AttendanceTest(AttendanceFixture):
         self.assertEqual(result["result"], "QUARANTINED")
         self.assertFalse(result["chain_advanced"])
 
+    def test_late_explicit_arrival_keeps_same_work_date(self):
+        rules = Policy(qr_mode="both", day_start="00:00", day_end="23:59", break_mins=0)
+        self.assertEqual(self.client.put(API + "/config", json=rules.model_dump(mode="json")).status_code, 200)
+        code = badge_code(self.worker(), "STATIC")
+        terminal = Terminal(self)
+        arrival = IN + timedelta(hours=17)
+        a = terminal.tap(code, arrival, direction="in")
+        b = terminal.tap(code, arrival + timedelta(hours=2), direction="out")
+        self.assertEqual(a["shift_id"], b["shift_id"])
+        self.assertEqual(a["work_date"], IN.date().isoformat())
+
     def test_concurrent_terminals_produce_one_arrival(self):
         badge = self.worker()
         code = badge_code(badge, "STATIC")

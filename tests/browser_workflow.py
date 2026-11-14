@@ -89,7 +89,10 @@ class BrowserWorkflow(DatabaseTest):
             kiosk.close()
 
             with transaction(self.owner) as db:
-                shift = db.execute("SELECT id FROM shifts WHERE org_id=%s", (self.org_id,)).fetchone()["id"]
+                shifts = db.execute("SELECT id,raw_in,raw_out FROM shifts WHERE org_id=%s", (self.org_id,)).fetchall()
+                self.assertEqual(len(shifts), 1)
+                self.assertTrue(shifts[0]["raw_in"] and shifts[0]["raw_out"])
+                shift = shifts[0]["id"]
             for username, label in (("field", "Field endorsement"), ("engineer", "Cost and overtime approved"),
                                     ("keeper", "Verified")):
                 context = chromium.new_context(accept_downloads=True)
