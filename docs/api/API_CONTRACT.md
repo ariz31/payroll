@@ -12,6 +12,7 @@ FastAPI publishes the machine-readable schema at `/api/openapi.json` and the int
 | Terminals and scans | `GET /terminals`, `PUT /terminals/{code}`, `POST /terminals/{code}/rotate`, `POST /terminals/session`, `POST /scans`, `POST /scans/offline-batches` |
 | Policy and verification | `GET/PUT /config`, `GET /dashboard`, `GET /shifts`, `GET /shifts/{id}`, `POST /shifts/{id}/review`, `POST /shifts/bulk-verify`, `GET /shifts/{id}/evidence/{kind}` |
 | Exports and printable DTR | `GET /payroll/periods/{period}/preflight`, `GET/POST /payroll/exports`, `GET /payroll/exports/{id}`, `GET /payroll/periods/{period}/dtr/{employee}` |
+| Payroll integration | `GET/POST /integrations/payroll`, `POST /integrations/payroll/{id}/revoke`, `GET /integrations/payroll/periods/{period}` |
 | Audit | `GET /audit/scans`, `POST /audit/scans/{id}/reconcile`, `GET /audit/approvals`, `GET /audit/control` |
 
 ## Scan capture
@@ -25,3 +26,8 @@ Send `request_id`, `version`, `action` and `notes` to the review route. Final de
 ## Exports
 
 Send `period`, `format`, the optional `site`, `expected_pending_count`, and the `snapshot_key` from preflight. Stale data returns HTTP 409. The export record stores the site scope, signed receipt, digest, status counts, policy versions, and pending employee IDs. Add `?download=true` to the authorized export resource to retrieve the original artifact.
+
+
+## Payroll integration
+
+Organization administrators can issue a read-only integration credential. The receiving service passes it in `Authorization: Bearer <credential>`. The period endpoint returns employee IDs and verified regular, overtime, and night hours for employees eligible for release in the credential's scope. Its response includes a hold count and omits names, evidence, and review notes. Follow `next_offset` with the first response's `snapshot_key`. If data changes between pages the API returns 409 and the caller restarts from the first page. Import consumers choose the downstream vendor adapter and retain the snapshot key with the handoff.

@@ -6,6 +6,7 @@
 - Implemented employee, terminal, badge and policy administration, signed static and rotating badges, geofenced gate capture, and encrypted offline sync.
 - Added scoped three-tier reviews, non-destructive corrections, bulk and automatic verification, and append-only audit history.
 - Added versioned 23-column CSV/XLSX exports with employee holds, checksums and signed receipts, and a printable Form 48 draft.
+- Added revocable, site-scoped payroll integration credentials and paginated release-eligible totals.
 - Added scoped quarantine reconciliation with permanent reasons and optional links to pending shifts.
 - Added optional OIDC and retained camera evidence with audited reads and scheduled cleanup.
 
