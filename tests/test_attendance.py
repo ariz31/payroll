@@ -30,7 +30,7 @@ class Terminal:
         self.auth = {"Authorization": "Device " + self.row["credential"]}
         self.sequence = 0
         self.previous = ""
-        self.anchor = IN - timedelta(hours=3)
+        self.anchor = IN - timedelta(minutes=30)
         with transaction(fixture.owner) as db:
             device = db.execute("SELECT * FROM terminals WHERE id=%s", (self.row["id"],)).fetchone()
         self.lease = lease_token(device, int(self.anchor.timestamp() * 1000), self.anchor, self.rules)[0]
@@ -60,7 +60,7 @@ class Terminal:
         return response.json()
 
 
-class AttendanceTest(DatabaseTest):
+class AttendanceFixture(DatabaseTest):
     def setUp(self):
         super().setUp()
         self.site()
@@ -80,6 +80,8 @@ class AttendanceTest(DatabaseTest):
             db.execute("UPDATE badges SET created_at=%s WHERE id=%s", (IN - timedelta(days=4), badge["id"]))
         return badge
 
+
+class AttendanceTest(AttendanceFixture):
     def test_durable_receipt_duplicate_geofence_and_raw_integrity(self):
         badge = self.worker()
         t = Terminal(self)
