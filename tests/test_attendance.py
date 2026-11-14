@@ -135,7 +135,7 @@ class AttendanceTest(AttendanceFixture):
         self.assertEqual(self.client.put(API + "/config", json=rules.model_dump(mode="json")).status_code, 200)
         code = badge_code(self.worker(), "STATIC")
         terminal = Terminal(self)
-        arrival = IN + timedelta(hours=17)
+        arrival = IN + timedelta(hours=9)
         a = terminal.tap(code, arrival, direction="in")
         b = terminal.tap(code, arrival + timedelta(hours=2), direction="out")
         self.assertEqual(a["shift_id"], b["shift_id"])
