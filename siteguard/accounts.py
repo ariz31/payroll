@@ -1,3 +1,4 @@
+import os
 from typing import Annotated, Literal
 from uuid import uuid4
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -36,6 +37,9 @@ class SiteInput(Input):
     longitude: float = Field(ge=-180, le=180, allow_inf_nan=False)
     radius_m: int = Field(ge=10, le=50000)
     active: bool = True
+    evidence_mode: Literal["off", "optional", "required"] = "off"
+    evidence_notice: str = Field(default="", max_length=600)
+    evidence_days: int = Field(default=30, ge=1, le=90)
 
 
 class StaffInput(Input):
@@ -127,16 +131,20 @@ def save_site(site_id: Code, payload: SiteInput, user: Staff):
         ZoneInfo(payload.timezone)
     except (ZoneInfoNotFoundError, ValueError):
         raise HTTPException(422, "Select a valid IANA timezone") from None
+    if payload.evidence_mode != "off":
+        if not evidence_enabled() or not payload.evidence_notice.strip():
+            raise HTTPException(422, "Enable image retention and provide the site privacy notice first")
     with transaction() as db:
         lock_org(db, user["org_id"])
         row = db.execute(
-            """INSERT INTO sites (org_id,id,name,timezone,latitude,longitude,radius_m,active)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+            """INSERT INTO sites (org_id,id,name,timezone,latitude,longitude,radius_m,active,evidence_mode,evidence_notice,evidence_days)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
             ON CONFLICT (org_id,id) DO UPDATE SET name=excluded.name,timezone=excluded.timezone,
-            latitude=excluded.latitude,longitude=excluded.longitude,radius_m=excluded.radius_m,active=excluded.active
+            latitude=excluded.latitude,longitude=excluded.longitude,radius_m=excluded.radius_m,active=excluded.active,evidence_mode=excluded.evidence_mode,
+            evidence_notice=excluded.evidence_notice,evidence_days=excluded.evidence_days
             RETURNING *""",
             (user["org_id"], site_id, payload.name, payload.timezone, payload.latitude, payload.longitude,
-             payload.radius_m, payload.active),
+             payload.radius_m, payload.active, payload.evidence_mode, payload.evidence_notice, payload.evidence_days),
         ).fetchone()
         control(db, user["org_id"], user["id"], "site.saved", site_id, payload.model_dump())
         return row
@@ -168,6 +176,12 @@ def save_account(db, user, login_name, payload):
     if previous and previous["id"] == user["id"] and (not payload.active or payload.role != "admin"
                                                       or payload.site_id != user["site_id"]):
         raise HTTPException(409, "Another administrator must change your access")
+    if payload.employee_id and not db.execute(
+        """SELECT 1 FROM assignments WHERE org_id=%s AND employee_id=%s
+        AND (%s::text IS NULL OR site_id=%s) AND (%s::text IS NULL OR site_id=%s)""",
+        (org_id, payload.employee_id, user["site_id"], user["site_id"], payload.site_id, payload.site_id),
+    ).fetchone():
+        raise HTTPException(422, "Employee account must be linked to a registered worker in scope")
     password_hash = hash_password(payload.password) if payload.password else (previous or {}).get("password_hash")
     row = db.execute(
         """INSERT INTO staff (id,org_id,login,name,role,site_id,scope_code,employee_id,active,password_hash)
@@ -192,3 +206,7 @@ def put_user(login_name: LoginName, payload: StaffInput, user: Staff):
     require_role(user, "admin")
     with transaction() as db:
         return save_account(db, user, login_name.lower(), payload)
+
+
+def evidence_enabled():
+    return os.getenv("SITEGUARD_EVIDENCE_ENABLED", "").lower() == "true"
